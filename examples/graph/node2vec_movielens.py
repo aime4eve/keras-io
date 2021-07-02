@@ -428,8 +428,8 @@ Our skip-gram is a simple binary classification model that works as follows:
 """
 
 learning_rate = 0.001
-embedding_dim = 50
-num_epochs = 10
+embedding_dim = 64
+num_epochs = 30
 
 """
 ### Implement the model
@@ -454,9 +454,14 @@ def create_model(vocabulary_size, embedding_dim):
     target_embeddings = embed_item(inputs["target"])
     # Lookup embeddings for context.
     context_embeddings = embed_item(inputs["context"])
+    # Add one hidden layer
+    target_hidden_1 = layers.Dense(4, activation=tf.nn.leaky_relu)(target_embeddings)
+    context_hidden_1 = layers.Dense(4, activation=tf.nn.leaky_relu)(context_embeddings)
+    target_hidden_2 = layers.Dense(4, activation=tf.nn.leaky_relu)(target_hidden_1)
+    context_hidden_2 = layers.Dense(4, activation=tf.nn.leaky_relu)(context_hidden_1)
     # Compute dot similarity between target and context embeddings.
     logits = layers.Dot(axes=1, normalize=False, name="dot_similarity")(
-        [target_embeddings, context_embeddings]
+        [target_hidden_2, context_hidden_2]
     )
     # Create the model.
     model = keras.Model(inputs=inputs, outputs=logits)
